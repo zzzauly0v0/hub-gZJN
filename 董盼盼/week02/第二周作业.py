@@ -61,7 +61,7 @@ def main():
         model.train()
         watch_loss = []
         for batch_index in range(train_sample // batch_size): 
-            #取出一个batch数据作为输入   train_x[0:20]  train_y[0:20] train_x[20:40]  train_y[20:40]
+            #取出一个batch数据作为输入  
             x = train_x[batch_index * batch_size : (batch_index + 1) * batch_size]
             y = train_y[batch_index * batch_size : (batch_index + 1) * batch_size]
             loss = model(x, y)  # 计算loss  model.forward(x,y)
