@@ -141,8 +141,8 @@ class TextLSTMClassifier(nn.Module):
         # 这里的 channels 就是 lstm_output_dim
         self.pool = nn.AdaptiveMaxPool1d(1)
 
-        # BatchNorm1d
-        self.bn = nn.BatchNorm1d(lstm_output_dim)
+        # LayerNorm
+        self.ln = nn.LayerNorm(lstm_output_dim)
 
         # 全连接层
         self.fc = nn.Linear(lstm_output_dim, num_classes)
@@ -177,16 +177,16 @@ class TextLSTMClassifier(nn.Module):
         pooled = pooled.squeeze(dim=-1)
 
         # 6. BatchNorm1d
-        bn_out = self.bn(pooled)
+        ln_out = self.ln(pooled)
 
-        # 6. Dropout
-        dropped = self.dropout(bn_out)
+        # 7. Dropout
+        dropped = self.dropout(ln_out)
 
         # 7. Linear + Sigmoid
         logits = self.fc(dropped)  # (batch_size, num_classes)
-        output = torch.sigmoid(logits)
+        # output = torch.sigmoid(logits)
 
-        return output
+        return logits 
 
 # ==================== 3. 训练函数 ====================
 def train_model(model, train_loader, val_loader, num_epochs=10, learning_rate=0.001):
@@ -216,7 +216,7 @@ def train_model(model, train_loader, val_loader, num_epochs=10, learning_rate=0.
         batch_idx：当前是第几批
         """
         for batch_idx, (texts, labels) in enumerate(train_loader):
-            # 没32个样本，进行一次模型更新
+            # 每32个样本，进行一次模型更新
             # 前向传播
             outputs = model(texts)
             # 计算损失
@@ -250,7 +250,7 @@ def train_model(model, train_loader, val_loader, num_epochs=10, learning_rate=0.
                 val_total += labels.size(0)  # 5. 统计总样本数
                 val_correct += (predicted == labels).sum().item() # 6. 统计预测正确的样本数
 
-                print(f"outputs.data: {outputs.data},labels: {labels}")
+                #print(f"outputs.data: {outputs.data},labels: {labels}")
 
         # 打印训练信息
         print(f'当前轮次 [{epoch+1}/{num_epochs}]')
