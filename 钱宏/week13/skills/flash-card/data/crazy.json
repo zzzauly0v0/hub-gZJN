@@ -1,0 +1,28 @@
+{
+  "word": "crazy",
+  "phonetic": "/ˈkreɪzi/",
+  "pos": "adj.",
+  "definition": "疯狂的；狂热的；不理智的",
+  "examples": [
+    {
+      "en": "The idea sounds crazy, but it might just work.",
+      "zh": "这个想法听起来很疯狂，但它可能真的有用。"
+    },
+    {
+      "en": "She's crazy about collecting vintage postcards.",
+      "zh": "她狂热地收藏复古明信片。"
+    },
+    {
+      "en": "I've been crazy busy with work lately.",
+      "zh": "我最近忙得要命。"
+    }
+  ],
+  "synonyms": [
+    "insane",
+    "mad",
+    "wild",
+    "foolish",
+    "absurd",
+    "ridiculous"
+  ]
+}
