@@ -1,0 +1,28 @@
+{
+  "word": "happy",
+  "phonetic": "/ˈhæpi/",
+  "pos": "adj.",
+  "definition": "快乐的；高兴的；满意的",
+  "examples": [
+    {
+      "en": "She felt happy when she received the good news.",
+      "zh": "收到好消息时她感到很高兴。"
+    },
+    {
+      "en": "A happy childhood lays the foundation for a healthy life.",
+      "zh": "快乐的童年为健康的人生奠定了基础。"
+    },
+    {
+      "en": "I'm not happy with the quality of this product.",
+      "zh": "我对这个产品的质量不满意。"
+    }
+  ],
+  "synonyms": [
+    "glad",
+    "joyful",
+    "cheerful",
+    "content",
+    "delighted",
+    "pleased"
+  ]
+}
