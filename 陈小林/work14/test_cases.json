@@ -1,0 +1,38 @@
+[
+  {
+    "id": 1,
+    "question": "Python是什么编程语言？它有什么特点？",
+    "expected_answer": "Python是一种高级、解释型、通用的编程语言，由Guido van Rossum于1991年首次发布。Python支持多种编程范式，包括面向对象、命令式、函数式和过程式编程。它以代码可读性强、语法简洁著称。",
+    "keywords": ["Python", "高级", "解释型", "通用", "Guido van Rossum", "1991", "面向对象", "函数式", "可读性强", "语法简洁"]
+  },
+  {
+    "id": 2,
+    "question": "Git是什么？谁创建了Git？",
+    "expected_answer": "Git是一个分布式版本控制系统，由Linus Torvalds于2005年创建。它的主要作用是跟踪代码变更历史、支持多人协作开发、管理代码分支和合并。",
+    "keywords": ["Git", "分布式", "版本控制", "Linus Torvalds", "2005", "代码变更", "协作开发", "分支", "合并"]
+  },
+  {
+    "id": 3,
+    "question": "Docker是什么？它解决了什么问题？",
+    "expected_answer": "Docker是一个开源的容器化平台，由Solomon Hykes于2013年发布。它将应用程序及其依赖项打包到轻量级容器中运行，解决了环境一致性问题，实现了一次构建到处运行。",
+    "keywords": ["Docker", "开源", "容器化", "Solomon Hykes", "2013", "轻量级容器", "环境一致性", "一次构建", "镜像"]
+  },
+  {
+    "id": 4,
+    "question": "机器学习的三大类型分别是什么？",
+    "expected_answer": "机器学习的三大类型是：监督学习（使用标注数据训练模型，如分类和回归）、无监督学习（从无标注数据中发现模式，如聚类和降维）、强化学习（通过与环境交互获得奖励来学习策略）。",
+    "keywords": ["监督学习", "无监督学习", "强化学习", "标注数据", "分类", "回归", "聚类", "降维", "奖励", "策略"]
+  },
+  {
+    "id": 5,
+    "question": "关系型数据库和非关系型数据库有什么区别？",
+    "expected_answer": "关系型数据库（如MySQL、PostgreSQL）使用表结构存储数据，支持SQL查询语言，强调ACID事务特性。非关系型数据库（如MongoDB、Redis）采用灵活的数据模型，强调高可扩展性和高性能。",
+    "keywords": ["关系型", "非关系型", "MySQL", "PostgreSQL", "表结构", "SQL", "ACID", "MongoDB", "Redis", "可扩展性"]
+  },
+  {
+    "id": 6,
+    "question": "什么是RESTful API？它有哪些核心原则？",
+    "expected_answer": "RESTful API是基于REST架构风格设计的网络应用程序接口。其核心原则包括使用HTTP方法表示操作、使用URL表示资源、无状态通信、统一接口。",
+    "keywords": ["REST", "架构风格", "HTTP方法", "GET", "POST", "PUT", "DELETE", "URL", "资源", "无状态", "统一接口"]
+  }
+]

@@ -1,0 +1,119 @@
+[
+  {
+    "iteration": 1,
+    "timestamp": "2026-08-06T21:41:51.019705",
+    "pass_rate": 0.83,
+    "passed": 5,
+    "failed": 1,
+    "total": 6,
+    "skill_qa_count": 6,
+    "mode": "deepseek",
+    "analysis": {
+      "total_failures": 1,
+      "common_missed_keywords": [
+        "Python",
+        "高级",
+        "解释型",
+        "通用",
+        "Guido van Rossum"
+      ]
+    },
+    "update_result": {
+      "updated_count": 1,
+      "details": [
+        {
+          "question": "Python是什么编程语言？它有什么特点？",
+          "action": "replaced"
+        }
+      ]
+    }
+  },
+  {
+    "iteration": 2,
+    "timestamp": "2026-08-06T21:41:57.469127",
+    "pass_rate": 0.83,
+    "passed": 5,
+    "failed": 1,
+    "total": 6,
+    "skill_qa_count": 6,
+    "mode": "deepseek",
+    "analysis": {
+      "total_failures": 1,
+      "common_missed_keywords": [
+        "Python",
+        "高级",
+        "解释型",
+        "通用",
+        "Guido van Rossum"
+      ]
+    },
+    "update_result": {
+      "updated_count": 1,
+      "details": [
+        {
+          "question": "Python是什么编程语言？它有什么特点？",
+          "action": "replaced"
+        }
+      ]
+    }
+  },
+  {
+    "iteration": 3,
+    "timestamp": "2026-08-06T21:42:04.430836",
+    "pass_rate": 0.83,
+    "passed": 5,
+    "failed": 1,
+    "total": 6,
+    "skill_qa_count": 6,
+    "mode": "deepseek",
+    "analysis": {
+      "total_failures": 1,
+      "common_missed_keywords": [
+        "Python",
+        "高级",
+        "解释型",
+        "通用",
+        "Guido van Rossum"
+      ]
+    },
+    "update_result": {
+      "updated_count": 1,
+      "details": [
+        {
+          "question": "Python是什么编程语言？它有什么特点？",
+          "action": "replaced"
+        }
+      ]
+    }
+  },
+  {
+    "iteration": 4,
+    "timestamp": "2026-08-06T21:42:10.474888",
+    "pass_rate": 0.83,
+    "passed": 5,
+    "failed": 1,
+    "total": 6,
+    "skill_qa_count": 6,
+    "mode": "deepseek",
+    "analysis": {
+      "total_failures": 1,
+      "common_missed_keywords": [
+        "Python",
+        "高级",
+        "解释型",
+        "通用",
+        "Guido van Rossum"
+      ]
+    },
+    "update_result": {
+      "updated_count": 1,
+      "details": [
+        {
+          "question": "Python是什么编程语言？它有什么特点？",
+          "action": "replaced"
+        }
+      ]
+    },
+    "status": "进化收敛"
+  }
+]
