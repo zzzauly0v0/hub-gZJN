@@ -1,3 +1,4 @@
+##修改前
 ---
 name: markdown-table-align
 description: 生成中英文混排(CJK)时源码级对齐正确的 Markdown 表格。当用户要求生成、格式化、修复 Markdown 表格,尤其是表格内容同时含中文和英文/数字、导致源码里(纯文本/等宽字体环境下)看起来没对齐时,必须使用此 skill。也适用于把整齐的表格写入 .md 笔记文件、GitHub README 等场景。用户说"表格没对齐"、"错位"、"帮我生成一个表格"且内容含中文时都应触发。
@@ -62,3 +63,21 @@ python3 scripts/align_table.py input.json
 - 脚本会自动让分隔行 `|---|---|` 的横线数量跟该列宽度一致,不需要手动调整。
 - 单元格内容如果很长或包含换行,先跟用户确认要不要截断——本 skill 默认不做截断处理。
 - 结果要直接写入目标 .md 文件(用 str_replace/create_file),不要只在对话里打印,除非用户就是想先预览一下再决定。
+##修改后
+---
+name: markdown-table-align
+description: 生成中英文混排的 Markdown 表格并对齐。含中文内容的表格必须调用脚本计算,禁止手动逐字符估算宽度。
+---
+# Markdown 表格中英混排对齐
+
+中文字符按宽度 2、其余按宽度 1 计算，每列补齐到该列最大宽度。
+
+**必须调用脚本，不要手动计算：**
+```bash
+python3 scripts/align_table.py input.json --align left,right,center
+```
+输入：JSON 二维数组，第一行为表头；也支持 `--csv`、`-`(stdin)。
+
+流程：数据 → 存为临时 JSON/CSV → 调脚本 → 结果写入目标 .md 文件（用 str_replace/create_file）。不在对话里手动拼接空格。
+
+跳过对齐：若表格只在会自动渲染的地方展示（聊天框、GitHub 页面），不需要执行以上流程，直接输出普通表格。
