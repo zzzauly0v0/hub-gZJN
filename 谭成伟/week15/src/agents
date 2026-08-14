@@ -1,0 +1,215 @@
+"""主 Agent + 并行 Subagent 编排（异步版，asyncio.gather 并行派发）。"""
+from __future__ import annotations
+import time
+import uuid
+import asyncio
+import logging
+import re
+from typing import Callable, Awaitable, Optional
+
+from react_loop import AsyncReActLoop
+from tavily_search import tavily_search, format_search_result
+
+logger = logging.getLogger(__name__)
+
+MAIN_SYSTEM = """你是旅行规划主分析师。你有 3 个工具：
+- web_search：联网搜索一次（参数=查询词）。仅用于单一事实可一次答出的问题
+- dispatch_subagents：派发多个子规划员并行调研（参数=用 | 分隔的多个子课题）
+- build_itinerary：把已收集的各维度信息组装成结构化行程（参数=按分号分隔的维度摘要）
+
+【关键决策原则】
+- 只要问题涉及 2 个及以上维度（如「旅行规划」「行程建议」「XX 攻略」「自由行」等），
+  必须用 dispatch_subagents 把各维度拆给子规划员并行调研，不要自己串行 web_search 多次。
+  示例："东京5天自由行规划：景点、美食、交通、住宿" → Action: dispatch_subagents
+        Action Input: 东京必去景点推荐与门票 | 东京特色美食与餐厅推荐 | 东京交通卡与市内出行方式 | 东京住宿区域推荐与价位
+- 只有单一事实问题（如"东京晴空塔门票"）才直接 web_search
+- 拿到子规划结果后，调用 build_itinerary 把各维度信息组装成完整行程，再给 Final Answer
+
+行程要求：按天组织（Day1/Day2...），每天列出景点+餐饮+交通，末尾给预算估算与注意事项。
+
+【示例】
+Question: 大阪3天自由行规划：景点、美食、交通
+Thought: 这是多维度旅行规划（3个维度），必须派发子规划员并行收集
+Action: dispatch_subagents
+Action Input: 大阪必去景点推荐 | 大阪特色美食推荐 | 大阪交通卡与出行方式
+Observation: 并行调研完成：3 个子规划员...（各子课题结果）
+Thought: 已收齐三个维度的并行调研结果，调用 build_itinerary 组装成行程
+Action: build_itinerary
+Action Input: 景点: 大阪城/通天阁/海游馆...
+美食: 章鱼烧/大阪烧/黑门市场...
+交通: 大阪周游卡/地铁...
+Observation: 已组装成3天行程
+Thought: 行程已组装完成，给出最终方案
+Final Answer: （按天组织的完整行程）"""
+
+
+def estimate_cost(action_input: str, shared_state: dict = None) -> str:
+    """本地预算估算工具（不联网）。输入格式："项目1=价格1, 项目2=价格2"。"""
+    pairs = []
+    for m in re.finditer(r"([^,，\n=]+?)[=：:]\s*(\d+)", action_input):
+        name = m.group(1).strip()
+        price = int(m.group(2))
+        if name:
+            pairs.append((name, price))
+    if not pairs:
+        return "未解析出预算项，请用 '项目=价格, 项目=价格' 格式"
+
+    total = 0
+    lines = []
+    for name, price in pairs:
+        total += price
+        lines.append(f"- {name}: ¥{price}")
+    return f"预算估算：\n" + "\n".join(lines) + f"\n合计: ¥{total}"
+
+
+def build_itinerary(action_input: str, shared_state: dict = None) -> str:
+    """把各维度信息组装成结构化行程（本地工具，无网络）。"""
+    dims = [d.strip() for d in action_input.replace("；", ";").split(";") if d.strip()]
+    if not dims:
+        return "未解析出维度信息"
+    out = ["已组装行程骨架（基于以下维度）："]
+    for i, d in enumerate(dims, 1):
+        out.append(f"  维度{i}: {d[:200]}")
+    out.append("请基于以上维度信息，按天组织成完整行程写入 Final Answer。")
+    return "\n".join(out)
+
+
+async def _dispatch_subagents(action_input: str, shared_state: dict = None,
+                              on_subagent_step: Optional[Callable] = None,
+                              on_subagent_done: Optional[Callable] = None,
+                              on_dispatch: Optional[Callable] = None,
+                              serial: bool = False) -> str:
+    """dispatch_subagents 工具实现。serial=False 用 asyncio.gather 并发，
+    serial=True 逐个 await（对比基线）。"""
+    subtopics = [s.strip() for s in action_input.split("|") if s.strip()][:6]
+    if not subtopics:
+        return "未解析出子课题"
+    shared_state = shared_state if shared_state is not None else {}
+    shared_state.setdefault("subagents", {})
+
+    defs = []
+    for topic in subtopics:
+        sid = f"sub_{uuid.uuid4().hex[:6]}"
+
+        async def web_search(q, **_):
+            return format_search_result(await tavily_search(q))
+
+        sub = AsyncReActLoop(
+            agent_name=sid,
+            tools={
+                "web_search": (web_search, "联网搜索，参数是查询词"),
+                "estimate_cost": (estimate_cost,
+                                  "本地预算估算，参数格式：项目1=价格1, 项目2=价格2"),
+            },
+            max_steps=4, model_tag="deepseek-chat(子)",
+        )
+        defs.append((sid, sub, topic))
+
+    dispatch_info = {"subtopics": subtopics,
+                     "subagent_ids": [sid for sid, _, _ in defs]}
+    shared_state.setdefault("dispatches", []).append(dispatch_info)
+    if on_dispatch:
+        await on_dispatch(dispatch_info)
+
+    t0 = time.time()
+    results = {}
+
+    async def _run_one(sid, sub, topic):
+        async def _on_step(step, _sid=sid):
+            if on_subagent_step:
+                await on_subagent_step(_sid, step)
+        return sid, await sub.run(topic, on_step=_on_step)
+
+    if serial:
+        for sid, sub, topic in defs:
+            sid, res = await _run_one(sid, sub, topic)
+            results[sid] = (topic, res)
+            shared_state["subagents"][sid] = {
+                "subtopic": topic, "trace": res["trace"],
+                "duration": res["duration"], "final_answer": res["final_answer"]}
+            if on_subagent_done:
+                await on_subagent_done(sid, res["duration"], topic)
+    else:
+        outs = await asyncio.gather(*[_run_one(sid, sub, topic) for sid, sub, topic in defs])
+        for sid, res in outs:
+            topic = next(t for s, _, t in defs if s == sid)
+            results[sid] = (topic, res)
+            shared_state["subagents"][sid] = {
+                "subtopic": topic, "trace": res["trace"],
+                "duration": res["duration"], "final_answer": res["final_answer"]}
+            if on_subagent_done:
+                await on_subagent_done(sid, res["duration"], topic)
+
+    wall = round(time.time() - t0, 2)
+    serial_sum = round(sum(r["duration"] for _, r in results.values()), 2)
+    shared_state.setdefault("parallel_stats", []).append({
+        "n_subagents": len(defs), "wall_clock": wall, "serial_sum": serial_sum,
+        "speedup": round(serial_sum / wall, 2) if wall else 0,
+        "mode": "async_gather" if not serial else "serial_await",
+    })
+
+    parts = [f"【子课题: {topic}】(用时{r['duration']}s)\n{r['final_answer'][:500]}"
+             for sid, (topic, r) in results.items()]
+    stats = shared_state["parallel_stats"][-1]
+    return (f"并行调研完成：{len(defs)} 个子规划员，wall-clock {wall}s "
+            f"(串行需 {serial_sum}s，加速 {stats['speedup']}×，"
+            f"模式: {stats['mode']})\n\n" + "\n\n".join(parts))
+
+
+async def run_research(question: str,
+                       on_main_step: Optional[Callable] = None,
+                       on_subagent_step: Optional[Callable] = None,
+                       on_subagent_done: Optional[Callable] = None,
+                       on_dispatch: Optional[Callable] = None,
+                       serial: bool = False) -> dict:
+    """执行一次旅行规划。返回 {final_answer, main_trace, subagents, parallel_stats}。"""
+    shared_state = {"subagents": {}, "dispatches": [], "parallel_stats": []}
+
+    async def dispatch_tool(action_input, shared_state=None):
+        info = shared_state or {}
+        return await _dispatch_subagents(
+            action_input, shared_state=info,
+            on_subagent_step=on_subagent_step,
+            on_subagent_done=on_subagent_done,
+            on_dispatch=on_dispatch,
+            serial=serial)
+
+    async def web_search(q, **_):
+        return format_search_result(await tavily_search(q))
+
+    main = AsyncReActLoop(
+        agent_name="main",
+        tools={
+            "web_search": (web_search, "联网搜索一次，参数=查询词"),
+            "dispatch_subagents": (dispatch_tool,
+                                   "派发多个子规划员并行调研，参数=用 | 分隔的多个子课题"),
+            "build_itinerary": (build_itinerary,
+                                "把各维度信息组装成结构化行程，参数=按分号分隔的维度摘要"),
+        },
+        max_steps=8,
+        model_tag="deepseek-chat(主)",
+        system_prompt=MAIN_SYSTEM,
+    )
+    result = await main.run(question, on_step=on_main_step, shared_state=shared_state)
+    return {
+        "final_answer": result["final_answer"],
+        "main_trace": result["trace"],
+        "subagents": shared_state["subagents"],
+        "parallel_stats": shared_state["parallel_stats"],
+        "dispatches": shared_state["dispatches"],
+    }
+
+
+if __name__ == "__main__":
+    import logging as _l
+    _l.basicConfig(level=_l.WARNING)
+
+    async def _t():
+        q = "东京5天自由行规划：必去景点、特色美食、市内交通、住宿区域"
+        r = await run_research(q)
+        print(f"\n{'='*60}\n主 agent 动作: {[s['action'] for s in r['main_trace']]}")
+        print(f"派发次数: {len(r['dispatches'])} | subagent 数: {len(r['subagents'])}")
+        print(f"并行统计: {r['parallel_stats']}")
+        print(f"\n方案头:\n{r['final_answer'][:200]}")
+
+    asyncio.run(_t())
