@@ -1,0 +1,14 @@
+﻿metric,label,unit,V1,V2,delta
+overall_success,综合成功率,%,0.0,0.0,0.0
+quality_score,平均质量得分,score,91.67,91.67,0.0
+json_valid,JSON 合法率,%,100.0,100.0,0.0
+required_fields,字段完整率,%,100.0,100.0,0.0
+word_match,目标词提取正确率,%,100.0,100.0,0.0
+examples_exact3,3 条例句满足率,%,100.0,100.0,0.0
+examples_bilingual,中英例句完整率,%,100.0,100.0,0.0
+examples_use_word,例句包含目标词率,%,100.0,100.0,0.0
+synonyms_4_6,近义词数量正确率,%,100.0,100.0,0.0
+synonyms_unique,近义词去重正确率,%,100.0,100.0,0.0
+html_success,HTML 生成成功率,%,0.0,0.0,0.0
+latency_s,平均响应耗时,s,5.675,5.875,0.2
+total_tokens,平均 Token 数,tokens,1096.0,1665.0,569.0

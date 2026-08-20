@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>Flash Card Skill 升级前后性能对比</title>
+<style>
+  body {
+    font-family: Arial, "Microsoft YaHei", sans-serif;
+    max-width: 1100px; margin: 36px auto; padding: 0 20px;
+    color: #1f2937; background: #f7f8fa;
+  }
+  h1, h2 { color: #111827; }
+  .meta { color: #6b7280; margin-bottom: 24px; }
+  .card {
+    background: white; border: 1px solid #e5e7eb; border-radius: 12px;
+    padding: 20px; margin: 18px 0;
+  }
+  table { width: 100%; border-collapse: collapse; background: white; }
+  th, td { padding: 11px 12px; border-bottom: 1px solid #e5e7eb; text-align: right; }
+  th:first-child, td:first-child { text-align: left; }
+  th { background: #f3f4f6; }
+  .good { color: #067647; font-weight: 700; }
+  .bad { color: #b42318; font-weight: 700; }
+  .same { color: #667085; }
+  .barrow { display:grid; grid-template-columns: 190px 1fr 70px; gap:10px; align-items:center; margin:9px 0; }
+  .track { height:12px; background:#eef0f3; border-radius:999px; overflow:hidden; }
+  .fill { height:100%; background:#4f46e5; border-radius:999px; }
+  .note { font-size: 14px; color:#667085; }
+</style>
+</head>
+<body>
+<h1>Flash Card Skill 升级前后性能对比</h1>
+<div class="meta">
+模型：qwen-max ｜ 每个测试重复：3 次 ｜ temperature：0.2 ｜ 测试用例：10 个
+</div>
+
+<div class="card">
+<h2>总体指标</h2>
+<table>
+<thead><tr><th>指标</th><th>升级前 V1</th><th>升级后 V2</th><th>变化</th></tr></thead>
+<tbody><tr><td>综合成功率</td><td>0.0%</td><td>0.0%</td><td class='same'>0.0%</td></tr><tr><td>平均质量得分</td><td>91.7</td><td>91.7</td><td class='same'>0.0</td></tr><tr><td>JSON 合法率</td><td>100.0%</td><td>100.0%</td><td class='same'>0.0%</td></tr><tr><td>字段完整率</td><td>100.0%</td><td>100.0%</td><td class='same'>0.0%</td></tr><tr><td>目标词提取正确率</td><td>100.0%</td><td>100.0%</td><td class='same'>0.0%</td></tr><tr><td>3 条例句满足率</td><td>100.0%</td><td>100.0%</td><td class='same'>0.0%</td></tr><tr><td>中英例句完整率</td><td>100.0%</td><td>100.0%</td><td class='same'>0.0%</td></tr><tr><td>例句包含目标词率</td><td>100.0%</td><td>100.0%</td><td class='same'>0.0%</td></tr><tr><td>近义词数量正确率</td><td>100.0%</td><td>100.0%</td><td class='same'>0.0%</td></tr><tr><td>近义词去重正确率</td><td>100.0%</td><td>100.0%</td><td class='same'>0.0%</td></tr><tr><td>HTML 生成成功率</td><td>0.0%</td><td>0.0%</td><td class='same'>0.0%</td></tr><tr><td>平均响应耗时</td><td>5.675s</td><td>5.875s</td><td class='bad'>+0.200s</td></tr><tr><td>平均 Token 数</td><td>1096.0</td><td>1665.0</td><td class='bad'>+569.0</td></tr></tbody>
+</table>
+<p class="note">绿色表示改善，红色表示退化。响应耗时和 Token 数越低越好，其余指标越高越好。</p>
+</div>
+
+<div class="card">
+<h2>核心质量得分可视化</h2>
+<div class='barrow'><div>升级前 V1</div><div class='track'><div class='fill' style='width:91.67%'></div></div><div>91.7</div></div><div class='barrow'><div>升级后 V2</div><div class='track'><div class='fill' style='width:91.67%'></div></div><div>91.7</div></div>
+</div>
+
+<div class="card">
+<h2>逐测试用例对比</h2>
+<table>
+<thead>
+<tr><th>用例</th><th>V1 质量得分</th><th>V2 质量得分</th><th>V1 综合成功率</th><th>V2 综合成功率</th></tr>
+</thead>
+<tbody><tr><td>T01</td><td>91.7</td><td>91.7</td><td>0.0%</td><td>0.0%</td></tr><tr><td>T02</td><td>91.7</td><td>91.7</td><td>0.0%</td><td>0.0%</td></tr><tr><td>T03</td><td>91.7</td><td>91.7</td><td>0.0%</td><td>0.0%</td></tr><tr><td>T04</td><td>91.7</td><td>91.7</td><td>0.0%</td><td>0.0%</td></tr><tr><td>T05</td><td>91.7</td><td>91.7</td><td>0.0%</td><td>0.0%</td></tr><tr><td>T06</td><td>91.7</td><td>91.7</td><td>0.0%</td><td>0.0%</td></tr><tr><td>T07</td><td>91.7</td><td>91.7</td><td>0.0%</td><td>0.0%</td></tr><tr><td>T08</td><td>91.7</td><td>91.7</td><td>0.0%</td><td>0.0%</td></tr><tr><td>T09</td><td>91.7</td><td>91.7</td><td>0.0%</td><td>0.0%</td></tr><tr><td>T10</td><td>91.7</td><td>91.7</td><td>0.0%</td><td>0.0%</td></tr></tbody>
+</table>
+</div>
+
+<div class="card">
+<h2>评估说明</h2>
+<ul>
+<li>同一模型、同一测试集、同一 temperature 下进行 A/B 对比。</li>
+<li>质量得分由 12 个确定性指标等权平均，包括 JSON、字段、目标词、例句、近义词和 HTML 生成。</li>
+<li>本报告不使用另一个 LLM 作为主观裁判，因此重点测量格式稳定性、执行可靠性和可自动验证约束。</li>
+<li>大模型具有随机性，建议每个用例至少重复 3 次；课程报告建议使用 5 次。</li>
+</ul>
+</div>
+</body></html>
